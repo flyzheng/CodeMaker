@@ -1,0 +1,170 @@
+########################################################################################
+##
+## Common variables:
+##  $YEAR - yyyy
+##  $TIME - yyyy-MM-dd HH:mm:ss
+##  $USER - user.name
+##
+## Available variables:
+##  $class0 - the context class, alias: $class
+##  $class1 - the selected class, like $class1, $class2
+##  $ClassName - generate by the config of "Class Name", the generated class name
+##
+## Class Entry Structure:
+##  $class0.className - the class Name
+##  $class0.packageName - the packageName
+##  $class0.importList - the list of imported classes name
+##  $class0.fields - the list of the class fields
+##          - type: the field type
+##          - name: the field name
+##          - modifier: the field modifier, like "private",or "@Setter private" if include annotations
+##  $class0.allFields - the list of the class fields include all fields of superclass
+##          - type: the field type
+##          - name: the field name
+##          - modifier: the field modifier, like "private",or "@Setter private" if include annotations
+##  $class0.methods - the list of class methods
+##          - name: the method name
+##          - modifier: the method modifier, like "private static"
+##          - returnType: the method returnType
+##          - params: the method params, like "(String name)"
+##  $class0.allMethods - the list of class methods include all methods of superclass
+##          - name: the method name
+##          - modifier: the method modifier, like "private static"
+##          - returnType: the method returnType
+##          - params: the method params, like "(String name)"#
+########################################################################################
+
+#macro (cap $strIn)$strIn.valueOf($strIn.charAt(0)).toUpperCase()$strIn.substring(1)#end
+#macro (low $strIn)$strIn.valueOf($strIn.charAt(0)).toLowerCase()$strIn.substring(1)#end
+#set($class0Var = "#low(${class0.ClassName})")
+#set($class1Var = "#low(${class1.ClassName})")
+#set($classList1Var = "#low($class1.ClassName)List")
+#set($classList0Var = "#low($class0.ClassName)List")
+
+
+package $class0.PackageName;
+
+#foreach($importer in $class0.ImportList)
+    #if(!$importer.equals("lombok.extern.slf4j.Slf4j"))
+    import $importer;
+    #end
+#end
+import lombok.extern.slf4j.Slf4j;
+
+/**
+*
+* @author $USER
+* @version  ${ClassName}.java, v 0.1 $TIME
+*/
+@Slf4j
+public class $ClassName {
+
+
+/**
+* Convert ${class1.ClassName}List to ${class0.ClassName}List
+* @param  ${class1Var}List
+* @return ${class0Var}List
+*/
+List<$class0.ClassName> convertTo${class0.ClassName}List(List<$class1.ClassName> ${classList1Var}) {
+if(CollectionUtils.isEmpty(${classList1Var})){
+log.error("${classList1Var} is null");
+return null;
+}
+
+List<$class0.ClassName>  list=new ArrayList<>();
+${classList1Var}.stream().forEach(s->{
+$class0.ClassName   ${class0Var} = convertTo${class0.ClassName}(s);
+if(null!=${class0Var}){
+list.add(${class0Var});
+}
+});
+
+return  list;
+}
+
+
+/**
+* Convert ${class1.ClassName} to ${class0.ClassName}
+* @param  ${class1Var}
+* @return ${class0Var}
+*/
+$class0.ClassName convertTo${class0.ClassName}($class1.ClassName #low($class1.ClassName)) {
+if (${class1Var} == null) {
+return null;
+}
+$class0.ClassName ${class0Var} = new ${class0.ClassName}();
+#foreach($field in $class0.Fields)
+    #if( $field.modifier.equals("private"))
+        #if ($field.type.equals("String"))
+        if(StringUtil.isNotBlank(${class1Var}.get#cap($field.Name)())){
+            ${class0Var}.set#cap($field.Name)(${class1Var}.get#cap($field.Name)());
+        }
+        #elseif($field.type.equals("List") || $field.type.equals("ArrayList"))
+        if(Collection.isNotEmpty(${class1Var}.get#cap($field.Name)())){
+            ${class0Var}.set#cap($field.Name)(${class1Var}.get#cap($field.Name)());
+        }
+        #else
+        if(null!=${class1Var}.get#cap($field.Name)()){
+            ${class0Var}.set#cap($field.Name)(${class1Var}.get#cap($field.Name)());
+        }
+        #end
+    #end
+#end
+
+return ${class0Var};
+}
+
+
+
+/**
+* Convert ${class0.ClassName}List to ${class1.ClassName}List
+* @param  ${class0Var}List
+* @return ${class1Var}List
+*/
+List<$class1.ClassName> convertTo${class1.ClassName}List(List<$class0.ClassName> ${classList0Var}) {
+if(CollectionUtils.isEmpty(${classList0Var})){
+log.error("${classList0Var} is null");
+return null;
+}
+
+List<$class1.ClassName>  list=new ArrayList<>();
+${classList0Var}.stream().forEach(s->{
+$class1.ClassName   ${class1Var} = convertTo${class1.ClassName}(s);
+if(null!=${class1Var}){
+list.add(${class1Var});
+}
+});
+
+return  list;
+}
+
+
+
+/**
+* Convert ${class0.ClassName} to ${class1.ClassName}
+* @param  ${class0Var}
+* @return ${class1Var}
+*/
+$class1.ClassName convertTo${class1.ClassName}($class0.ClassName #low($class0.ClassName)) {
+if (${class0Var} == null) {
+return null;
+}
+$class1.ClassName ${class1Var} = new ${class1.ClassName}();
+#foreach($field in $class1.Fields)
+    #if ($field.type.equals("String"))
+    if(StringUtil.isNotBlank(${class0Var}.get#cap($field.Name)())){
+        ${class1Var}.set#cap($field.Name)(${class0Var}.get#cap($field.Name)());
+    }
+    #elseif($field.type.equals("List") || $field.type.equals("ArrayList"))
+    if(Collection.isNotEmpty(${class0Var}.get#cap($field.Name)())){
+        ${class1Var}.set#cap($field.Name)(${class0Var}.get#cap($field.Name)());
+    }
+    #else
+    if(null!=${class0Var}.get#cap($field.Name)()){
+        ${class1Var}.set#cap($field.Name)(${class0Var}.get#cap($field.Name)());
+    }
+    #end
+#end
+return ${class1Var};
+}
+}
